@@ -17,13 +17,16 @@ public:
     // Up = pieces[0]0,1,2 + pieces[1]0,1,2 + pieces[2]0,1,2        col[1]
     // Down = pieces[0]6,7,8   pieces[1]6,7,8 + pieces[2]6,7,8      col[1]
 
+    int rotationCount;
+
 
     virCube() {
+        rotationCount = 0;
         for (int layer = 0; layer < 3; layer++) {
             for (int position = 0; position < 9; position++) {
                 int x = position % 3 - 1;
-                int y = position / 3 - 1;
-                int z = layer - 1;
+                int y = 1 - position / 3;
+                int z = 1- layer;
                 pieces[layer][position] = piece(x, y, z);
 
                 if (layer == 0) {
@@ -51,7 +54,7 @@ public:
         // Print top face
         std::cout << "       ";
         for (int i = 0; i < 3; i++) {
-            std::cout << pieces[0][i].col[1] << " ";
+            std::cout << pieces[2][i].col[1] << " ";
         }
         std::cout << std::endl;
         std::cout << "       ";
@@ -61,7 +64,7 @@ public:
         std::cout << std::endl;
         std::cout << "       ";
         for (int i = 0; i < 3; i++) {
-            std::cout << pieces[2][i].col[1] << " ";
+            std::cout << pieces[0][i].col[1] << " ";
         }
         std::cout << std::endl;
 
@@ -112,15 +115,35 @@ public:
 
     // f = front clockwise, F = front counter clockwise, u = upper clockwise, etc...
     void rotateFace(char face) {
+        rotationCount++;
         rotMatrix rotMatricies;
-
+        piece temp[9];
         switch (face)
         {
         case 'f':
-            
-            break;
-    } 
+            for (int i = 0; i < 9; i++) {
+                temp[i] = pieces[0][i];
+            }
 
+            for (int i = 0; i < 9; i++) {
+                pieces[0][i].rotate(rotMatricies.FCW);
+            }
+            break;
+
+            for (int i = 0; i < 9; i++) {
+                int x = temp[i].pos[0];
+                int y = temp[i].pos[1];
+                int newIndex = (1 - y) * 3 + (x + 1);
+                pieces[0][newIndex] = temp[i];
+            }            
+
+        case 'F':
+            for (int i = 0; i < 9; i++) {
+                pieces[0][i].rotate(rotMatricies.FCCW);
+            }
+            break;
+        } 
+    }
 };
 
 #endif

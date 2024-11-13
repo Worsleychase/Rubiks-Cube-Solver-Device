@@ -1,6 +1,7 @@
 // piece.hpp
 
 #include <iostream>
+#include <algorithm>
 #include "rotMatricies.hpp"
 
 #ifndef PIECE
@@ -17,8 +18,6 @@ public:
     // Orange = 'O'
     // Yellow = 'Y'
 
-    rotMatrix rotMatricies;
-
     piece(int x = 0, int y = 0, int z = 0) {
         pos[0] = x;
         pos[1] = y;
@@ -28,36 +27,45 @@ public:
         col[2] = 'N';
     }
 
-    void setColor(char colorX, char colorY, char colorZ) {
-        col[0] = colorX;
-        col[1] = colorY;
-        col[2] = colorZ;
-    }
-
     void rotate(int rotMatrix[3][3]) {
         int newPos[3];
-        char newCol[3];
-
-        for (int i = 0; i < 3; i++) {
-            newPos[i] = 0;
-            for (int j = 0; j < 3; j++) {
-                newPos[i] += rotMatrix[i][j] * pos[j];
+        for (int column = 0; column < 3; column++) {
+            newPos[column] = 0;
+            for (int row = 0; row < 3; row++) {
+                newPos[column] += pos[row] * rotMatrix[row][column];
             }
         }
-
         for (int i = 0; i < 3; i++) {
             pos[i] = newPos[i];
         }
 
+        int nonEffect;
         for (int i = 0; i < 3; i++) {
-            char temp = col[i];
-            col[i] = col[(int)newPos[i]];
-            col[(int)newPos[i]] = temp;
+            if (rotMatrix[i][i] != 0) {
+                nonEffect = i;
+                break;
+            }
         }
 
+        switch (nonEffect)
+        {
+        case 0:
+            std::swap(col[1],col[2]);
+            break;
+        case 1:
+            std::swap(col[0],col[2]);
+            break;
+        case 2:
+            std::swap(col[0],col[1]);
+            break;
+        }
     }
 
-
+    void print() {
+        for (int i = 0; i < 3; i++) {
+            std::cout << "Pos: " << pos[i] << ", Color: " << col[i] << std::endl;
+        }
+    }
 };
 
 #endif
