@@ -1,5 +1,8 @@
 // cube.hpp
 
+#include <vector>
+#include <queue>
+
 #include "piece.hpp"
 
 #ifndef CUBE
@@ -324,6 +327,7 @@ public:
             }
             break;
         }
+
         case 'u': {// R L F2 B2 R' L' D R L F2 B2 R' L' 
             rotationCount += 16;
             rotateFace('r');
@@ -380,7 +384,185 @@ public:
         }
     }
 
+    bool isSolved() {
+        // centers:
+        // Left  = G  |  Front = O
+        // Right = B  |  Back  = R
+        // Up    = Y  |  Down  = W
 
+        char leftColor = 'G';
+        char frontColor = 'O';
+        char rightColor = 'B';
+        char backColor = 'R';
+        char upColor = 'Y';
+        char downColor = 'W';
+                
+        for (int i = 0; i < 9; i++) {
+            // Check the front face
+            if (pieces[0][i].col[2] != frontColor) return false;
+
+            // Check the back face
+            if (pieces[2][i].col[2] != backColor) return false;
+
+            // Check the left face
+            if (pieces[0][i % 3 == 0 ? i : 0].col[0] != leftColor) return false;
+            if (pieces[1][i % 3 == 0 ? i : 0].col[0] != leftColor) return false;
+            if (pieces[2][i % 3 == 0 ? i : 0].col[0] != leftColor) return false;
+
+            // Check the right face
+            if (pieces[0][i % 3 == 2 ? i : 2].col[0] != rightColor) return false;
+            if (pieces[1][i % 3 == 2 ? i : 2].col[0] != rightColor) return false;
+            if (pieces[2][i % 3 == 2 ? i : 2].col[0] != rightColor) return false;
+
+            // Check the top face
+            if (pieces[0][i < 3 ? i : 0].col[1] != upColor) return false;
+            if (pieces[1][i < 3 ? i : 0].col[1] != upColor) return false;
+            if (pieces[2][i < 3 ? i : 0].col[1] != upColor) return false;
+
+            // Check the bottom face
+            if (pieces[0][i > 5 ? i : 6].col[1] != downColor) return false;
+            if (pieces[1][i > 5 ? i : 6].col[1] != downColor) return false;
+            if (pieces[2][i > 5 ? i : 6].col[1] != downColor) return false;
+        }
+        return true;
+    }
+
+    std::string getStateID() const {
+        std::string stateID;
+
+        // Loop through the cube faces (6 faces)
+        for (int i = 0; i < 6; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                for (int k = 0; k < 3; ++k) {
+                    // Based on the printCube logic, grab the corresponding colors from pieces
+                    // Modify this if needed to match the correct color from your data structure.
+                    // Assuming pieces[i][j * 3 + k].col[1] corresponds to the color of the cube face:
+                    
+                    if (i == 0) {
+                        stateID += pieces[2 - j][k].col[1];  // Top face (pieces[2][i])
+                    }
+                    else if (i == 1) {
+                        stateID += pieces[0][j * 3 + k].col[1];  // Bottom face
+                    }
+                    else if (i == 2) {
+                        stateID += pieces[2 - j][k].col[0];  // Left face
+                    }
+                    else if (i == 3) {
+                        stateID += pieces[j][k * 3 + 2].col[0];  // Right face
+                    }
+                    else if (i == 4) {
+                        stateID += pieces[0][j * 3 + k].col[2];  // Front face
+                    }
+                    else if (i == 5) {
+                        stateID += pieces[2][j * 3 + 2 - k].col[2];  // Back face
+                    }
+                }
+            }
+        }
+
+        return stateID;
+    }
+
+    bool isCross() {
+        if (pieces[0][7].col[1] != 'W') return false;
+        if (pieces[1][6].col[1] != 'W') return false;
+        if (pieces[1][7].col[1] != 'W') return false;
+        if (pieces[1][8].col[1] != 'W') return false;
+        if (pieces[2][7].col[1] != 'W') return false;
+
+        if (pieces[0][7].col[2] != 'O' || pieces[0][4].col[2] != 'O') return false;
+
+        if (pieces[1][5].col[0] != 'B' || pieces[1][8].col[0] != 'B') return false;
+
+        if (pieces[2][7].col[2] != 'R' || pieces[2][4].col[2] != 'R') return false;
+
+        if (pieces[1][3].col[0] != 'G' || pieces[1][6].col[0] != 'G') return false;
+
+        return true;   
+    }
+
+    bool isF2L() {
+        // Check bottom
+        for (int i = 0; i < 3; i++) {
+            if (pieces[0][i + 6].col[1] != 'W') {return false;};
+            if (pieces[1][i + 6].col[1] != 'W') {return false;};
+            if (pieces[2][i + 6].col[1] != 'W') {return false;};
+        }
+        // Check bottom 2 layers front
+        for (int i = 6; i < 9; i++) {
+            if (pieces[0][i].col[2] != 'O') {return false;};
+            if (pieces[0][i-3].col[2] != 'O') {return false;};
+        }        
+
+        for (int i = 0; i < 3; i++) {
+            // Check bottom 2 layers left
+            for (int j = 0; j < 3; j++) {
+                if (pieces[j][i * 3].col[0] != 'G') {return false;};
+            }
+            // Check bottom 2 layers right
+            for (int j = 0; j < 3; j++) {
+                if (pieces[j][i * 3 + 2].col[0] != 'B') {return false;};
+            }
+        }
+
+        // Check bottom 2 layers back
+        for (int i = 6; i < 9; i++) {
+            if (pieces[2][i].col[2] != 'R') {return false;};
+            if (pieces[2][i-3].col[2] != 'R') {return false;};
+        }        
+
+
+        return true;
+    }
+
+    bool isTopLayerOriented() {
+        // Check top face
+        for (int i = 0; i < 3; i++) {
+            if (pieces[0][i].col[1] != 'Y') {return false;};
+            if (pieces[1][i].col[1] != 'Y') {return false;};
+            if (pieces[2][i].col[1] != 'Y') {return false;};
+        }
+        // Check front
+        for (int i = 0; i < 3; i++) {
+            if (pieces[0][i].col[2] != 'O') {return false;};
+        }        
+        // Check left
+        for (int j = 0; j < 3; j++) {
+            if (pieces[j][0].col[0] != 'G') {return false;};
+        }
+        // Check right
+        for (int j = 0; j < 3; j++) {
+            if (pieces[j][2].col[0] != 'B') {return false;};
+        }
+        // Check back
+        for (int i = 0; i < 3; i++) {
+            if (pieces[2][i].col[2] != 'R') {return false;};
+        }        
+
+
+        return true;        
+
+    }
+
+    bool isMiddleLayerSolved() {
+        // Check front
+        for (int i = 3; i < 6; i++) {
+            if (pieces[0][i].col[2] != 'O') {return false;};
+        }        
+        // Check left
+        for (int j = 0; j < 3; j++) {
+            if (pieces[j][3].col[0] != 'G') {return false;};
+        }
+        // Check right
+        for (int j = 0; j < 3; j++) {
+            if (pieces[j][5].col[0] != 'B') {return false;};
+        }
+        // Check back
+        for (int i = 3; i < 6; i++) {
+            if (pieces[2][i].col[2] != 'R') {return false;};
+        }        
+        return true;    
+    }
 };
 
 #endif

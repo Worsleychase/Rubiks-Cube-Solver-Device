@@ -10,7 +10,9 @@
 class piece {
 public:
     int pos[3]; // Position array, (0,0,0) = center piece
+    int solvedPos[3];
     char col[3]; // Color array (x,y,z) => ('O','W','B')... ('B','NULL','G')
+    char solvedCol[3];
     // White = 'W'
     // Red = 'R'
     // Blue = 'B'

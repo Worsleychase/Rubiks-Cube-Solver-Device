@@ -1,15 +1,18 @@
 // main.cpp
 
 #include <string>
-#include "cube.hpp"
+
+#include "solver.hpp"
 
 void takeCommands();
 
+
 int main() {
     takeCommands();
-    
+
     return 0;
 }
+
 
 void takeCommands() {
     virCube cube;
@@ -18,7 +21,7 @@ void takeCommands() {
     cube.printCube();
     std::cout << std::endl;
 
-    std::cout << "Enter commands (f,F,r,R,b,B,l,L,d,D,u,U), 'random', or 'q' to quit:" << std::endl;
+    std::cout << "Enter commands (f,F,r,R,b,B,l,L,d,D,u,U), 'solve', 'random', or 'q' to quit:" << std::endl;
     
     while (true) {
         std::cout << "> ";
@@ -32,7 +35,7 @@ void takeCommands() {
             int moves;
             std::cout << "How many random moves? ";
             std::cin >> moves;
-            cube.randomize(moves);  // or whatever number of moves you want
+            cube.randomize(moves);
             cube.printCube();
             std::cout << std::endl;
         }
@@ -46,7 +49,19 @@ void takeCommands() {
             cube.rotateFace(command[0]);
             cube.printCube();
             std::cout << std::endl;
-        } else {
+        } 
+        else if (command == "solve") {
+            if(cube.isSolved()) {std::cout << "Already solved." << std::endl;}
+            else {
+                CubeSolver cubeSol(cube);
+                std::cout << "Calculating solution" << std::endl;
+                cubeSol.solve();
+            }
+        } else if (command == "F2L") {
+            std::cout << cube.isF2L();
+        }
+        
+        else {
             std::cout << "Invalid command. Please try again." << std::endl;
         }
     }
