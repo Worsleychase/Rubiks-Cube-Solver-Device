@@ -5,10 +5,6 @@
 #include <queue>
 #include <unordered_set>
 #include <functional>
-#include <vector>
-#include <iostream>
-#include <string>
-#include <algorithm>
 
 #include "cube.hpp"
 #include "timer.hpp"
